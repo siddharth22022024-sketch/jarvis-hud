@@ -1,22 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>J.A.R.V.I.S.</title>
 <style>
-  :root {
-    --bg: #020813;
-    --panel: rgba(6, 20, 40, 0.72);
-    --border: rgba(0, 212, 255, 0.28);
-    --cyan: #00d4ff;
-    --cyan-soft: rgba(0, 212, 255, 0.14);
-    --cyan-glow: rgba(0, 212, 255, 0.45);
-    --text: #e0f7ff;
-    --muted: #679bb5;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body {
-    background: radial-gradient(circle at 50% 45%, #072242 0%, #030d1e 55%, var(--bg) 100%);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, -apple-system,
+*{box-sizing:border-box;margin:0;padding:0;user-select:none}
+body{background:#020813;color:#e0f7ff;font-family:sans-serif;height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:16px 24px;overflow:hidden}
+#dim{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:99}
+.time{text-align:center;color:#00d4ff;letter-spacing:3px;font-size:13px}
+.grid{display:grid;grid-template-columns:270px 1fr 270px;gap:18px;align-items:center}
+.box{background:rgba(6,22,44,.8);border:1px solid rgba(0,212,255,.35);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:11px;font-size:12px}
+.ttl{font-size:10px;color:#679bb5;letter-spacing:2px;border-bottom:1px solid rgba(0,212,255,.15);padding-bottom:4px}
+.row{display:flex;justify-content:space-between}
+.val{color:#00d4ff;font-weight:700}
+.core{height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.ring{position:absolute;border-radius:50%;border:2px solid rgba(0,212,255,.3)}
+.r1{width:270px;height:270px;border-style:dashed;animation:spin 25s linear infinite}
+.r2{width:215px;height:215px;border-top-color:#00d4ff;border-bottom-color:#00d4ff;animation:spin 12s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:28px;letter-spacing:7px;padding-left:7px;text-shadow:0 0 20px #00d4ff}
+.sub{font-size:10px;color:#00d4ff;letter-spacing:2px;margin-top:8px}
+input[type=range]{width:100%;accent-color:#00d4ff}
+select,button{background:#061b36;color:#00d4ff;border:1px solid rgba(0,212,255,.4);padding:7px;border-radius:6px;font-size:11px;width:100%;cursor:pointer}
+.dock{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:920px;width:100%;margin:0 auto}
+a{background:rgba(6,22,44,.85);border:1px solid rgba(0,212,255,.3);border-radius:10px;padding:12px 6px;text-align:center;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px}
+a:hover{border-color:#00d4ff;box-shadow:0 0 15px rgba(0,212,255,.4)}
+</style>
+</head>
+<body>
+<div id="dim"></div>
+<div class="time" id="tm">--:--</div>
+<div class="grid">
+  <div class="box">
+    <div class="ttl">SYSTEM TELEMETRY</div>
+    <div class="row"><span>Battery</span><span class="val" id="bat">--</span></div>
+    <div class="row"><span>System</span><span class="val" id="sys">ONLINE</span></div>
+    <div class="row"><span>Wi-Fi</span><span class="val" id="wifi">--</span></div>
+    <div class="row"><span>Client</span><span class="val">PRIMEBOOK-14</span></div>
+    <div class="row"><span>Bluetooth</span><span class="val" id="bt">READY</span></div>
+    <button onclick="btScan()">SCAN BLUETOOTH</button>
+  </div>
+  <div class="core" onclick="greet(true)">
+    <div class="ring r1"></div><div class="ring r2"></div>
+    <h1>J.A.R.V.I.S.</h1>
+    <div class="sub" id="st">TAP CORE TO ACTIVATE</div>
+  </div>
+  <div class="box">
+    <div class="ttl">ENVIRONMENT & VOICE</div>
+    <div class="row"><span>Brightness</span><span class="val" id="bv">100%</span></div>
+    <input type="range" min="25" max="100" value="100" oninput="bv.textContent=this.value+'%';dim.style.opacity=(100-this.value)/115">
+    <div class="row"><span>Volume</span><span class="val" id="vv">100%</span></div>
+    <input type="range" min="0" max="100" value="100" oninput="vol=this.value/100;vv.textContent=this.value+'%'">
+    <select id="vsel" onchange="greet(true)"></select>
+    <button onclick="greet(true)">TEST VOICE</button>
+  </div>
+</div>
+<div class="dock">
+  <a href="https://www.pw.live" target="_blank">PHYSICS WALLAH</a>
+  <a href="https://web.whatsapp.com" target="_blank">WHATSAPP</a>
+  <a href="https://www.youtube.com" target="_blank">YOUTUBE</a>
+  <a href="https://gemini.google.com" target="_blank">GEMINI</a>
+  <a href="https://account.protonvpn.com" target="_blank">PROTON VPN</a>
+  <a href="https://www.google.com" target="_blank">BROWSER</a>
+</div>
+<script>
+setInterval(()=>{const n=new Date();tm.textContent=n.toLocaleTimeString()+' // '+n.toDateString().toUpperCase()},1000);
+if(navigator.getBattery)navigator.getBattery().then(b=>{const u=()=>bat.textContent=Math.round(b.level*100)+'%'+(b.charging?' ⚡':'');u();b.onlevelchange=u;b.onchargingchange=u});
+const net=()=>{wifi.textContent=navigator.onLine?'CONNECTED':'OFFLINE';sys.textContent=navigator.onLine?'OPTIMAL':'OFFLINE'};
+window.ononline=window.onoffline=net;net();
+async function btScan(){try{const d=await navigator.bluetooth.requestDevice({acceptAllDevices:true});bt.textContent=d.name||'LINKED'}catch(e){}}
+let vol=1,enV=[];
+function loadV(){enV=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));vsel.innerHTML='';enV.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v.name;vsel.appendChild(o)});const f=enV.findIndex(v=>/GB/i.test(v.lang)&&/female|libby|sonia|kate|hazel/i.test(v.name));if(f>-1)vsel.selectedIndex=f}
+speechSynthesis.onvoiceschanged=loadV;loadV();
+function greet(f){if(!f&&document.hidden)return;speechSynthesis.cancel();const m=new SpeechSynthesisUtterance('Welcome back, boss. All systems are online.');const v=enV[vsel.selectedIndex];m.lang=v?v.lang:'en-GB';if(v)m.voice=v;m.pitch=1.15;m.volume=vol;st.textContent='SYSTEMS ONLINE, BOSS';speechSynthesis.speak(m)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)greet(false)});
+window.addEventListener('pointerdown',()=>greet(false),{once:true});
+</script>
+</body>
+</html>
